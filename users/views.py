@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
-    UserChangePasswordSerializer
+    UserChangePasswordSerializer, SendPasswordResetEmailViewSerializer, UserPasswordResetSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -75,3 +75,24 @@ class UserChangePasswordView(APIView):
         if serializer.is_valid(raise_exception=True):
             return Response({'msg': 'Password Changed successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SendPasswordResetEmailView(APIView):
+    renderer_classes = [UserRenderer]
+
+    def post(self, request, *args, **kwargs):
+        serializer = SendPasswordResetEmailViewSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            return Response({'msg': 'Password Reset link send to your email successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserPasswordResetView(APIView):
+    renderer_classes = [UserRenderer]
+
+    def post(self, request, uid, token, *args, **kwargs):
+        serializer = UserPasswordResetSerializer(data=request.data, context={'uid': uid, 'token': token})
+        if serializer.is_valid(raise_exception=True):
+            return Response({'msg': 'Password Reset successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
