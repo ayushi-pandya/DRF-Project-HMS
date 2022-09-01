@@ -127,3 +127,13 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+
+class StaffSpeciality(models.Model):
+    """
+    create class for adding speciality table for staff.
+    """
+    speciality = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.speciality

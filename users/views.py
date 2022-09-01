@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
-    UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer
+    UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
+    AddStaffSpecialitySerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -119,5 +120,15 @@ class AddUserRoleView(APIView):
         return Response({'msg': 'Role Added successfully'}, status=status.HTTP_200_OK)
 
 
+class AddStaffSpecialityView(APIView):
+    """
+    API for adding staff speciality
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
 
-
+    def post(self, request, *args, **kwargs):
+        serializer = AddStaffSpecialitySerializer(data=request.data, context={'user': request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'msg': 'Speciality Added successfully'}, status=status.HTTP_200_OK)

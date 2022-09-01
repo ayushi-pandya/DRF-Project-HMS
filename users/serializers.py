@@ -1,7 +1,7 @@
 from xml.dom import ValidationErr
 
 from rest_framework import serializers
-from users.models import User, UserRole
+from users.models import User, UserRole, StaffSpeciality
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -150,10 +150,22 @@ class AddUserRoleSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user = self.context.get('user')
-        role = attrs.get('role')
-        print(role)
-        print(user.is_admin)
         if not user.is_admin:
             raise serializers.ValidationError('You are not Admin...You can not access this page')
         return attrs
 
+
+class AddStaffSpecialitySerializer(serializers.ModelSerializer):
+    """
+    Serializer for adding the staff speciality
+    """
+
+    class Meta:
+        model = StaffSpeciality
+        fields = ['speciality']
+
+    def validate(self, attrs):
+        user = self.context.get('user')
+        if not user.is_admin:
+            raise serializers.ValidationError('You are not Admin...You can not access this page')
+        return attrs
