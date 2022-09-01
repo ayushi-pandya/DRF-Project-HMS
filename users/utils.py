@@ -2,7 +2,7 @@ from django.core.mail import EmailMessage
 import os
 
 
-class Util:
+class EmailSend:
     @staticmethod
     def send_email(data):
         email = EmailMessage(

@@ -1,17 +1,17 @@
 from xml.dom import ValidationErr
 
 from rest_framework import serializers
-from users.models import User
+from users.models import User, UserRole
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
-from users.utils import Util
+from users.utils import EmailSend
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
-    create serializer for user registration
+    Serializer for user registration
     """
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -37,7 +37,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class UserLoginSerializer(serializers.ModelSerializer):
     """
-    create serializer for user login
+    Serializer for user login
     """
     username = serializers.CharField(max_length=200)
 
@@ -48,7 +48,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """
-    create serializer for user profile
+    Serializer for user profile
     """
 
     class Meta:
@@ -58,7 +58,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserChangePasswordSerializer(serializers.Serializer):
     """
-    create serializer for user change password
+    Serializer for user change password
     """
     password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
     password2 = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
@@ -77,9 +77,9 @@ class UserChangePasswordSerializer(serializers.Serializer):
         return attrs
 
 
-class SendPasswordResetEmailViewSerializer(serializers.Serializer):
+class SendPasswordResetEmailSerializer(serializers.Serializer):
     """
-    create serializer for user forgot password
+    Serializer for send reset password email
     """
     email = serializers.EmailField(max_length=255)
 
@@ -91,25 +91,26 @@ class SendPasswordResetEmailViewSerializer(serializers.Serializer):
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.id))
-            print('uid:', uid)
             token = PasswordResetTokenGenerator().make_token(user)
-            print('token:', token)
             link = 'http://localhost:3000/api/user/reset/' + uid + '/' + token
-            print('link:', link)
+            # print(link)
             # send email code
-            body = 'Click Following Link to Reset Your Password' + link
+            body = 'Click Following Link to Reset Your Password ' + link
             data = {
                 'subject': 'Reset Your Password',
                 'body': body,
                 'to_email': user.email,
             }
-            Util.send_email(data)
+            EmailSend.send_email(data)
             return attrs
         else:
             raise ValidationErr('You are not a Registered User')
 
 
 class UserPasswordResetSerializer(serializers.Serializer):
+    """
+    Serializer for creating serializer for password reset
+    """
     password = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
     password2 = serializers.CharField(max_length=255, style={'input_type': 'password'}, write_only=True)
 
@@ -136,3 +137,23 @@ class UserPasswordResetSerializer(serializers.Serializer):
         except DjangoUnicodeDecodeError as identifier:
             PasswordResetTokenGenerator().check_token(user, token)
             raise ValidationErr('Token is not valid or Expired')
+
+
+class AddUserRoleSerializer(serializers.ModelSerializer):
+    """
+    Serializer for adding the user role
+    """
+
+    class Meta:
+        model = UserRole
+        fields = ['role']
+
+    def validate(self, attrs):
+        user = self.context.get('user')
+        role = attrs.get('role')
+        print(role)
+        print(user.is_admin)
+        if not user.is_admin:
+            raise serializers.ValidationError('You are not Admin...You can not access this page')
+        return attrs
+

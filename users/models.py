@@ -86,7 +86,7 @@ class UserManager(BaseUserManager):
 # custom user model
 class User(AbstractBaseUser):
     """
-        model for custom user table.
+    model for custom user table.
     """
     GENDER_CHOICES = (
         ('Male', 'Male'),
