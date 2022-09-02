@@ -1,7 +1,9 @@
+from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser
 from phonenumber_field.modelfields import PhoneNumberField
 from rest_framework.exceptions import ValidationError
+import uuid
 
 
 def validate_age(age):
@@ -10,16 +12,6 @@ def validate_age(age):
     """
     if age < 21:
         raise ValidationError('Please enter age above 21')
-
-
-class UserRole(models.Model):
-    """
-    class for creating table of role in hospital
-    """
-    role = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.role
 
 
 # Custom User Manager
@@ -81,6 +73,16 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
+
+
+class UserRole(models.Model):
+    """
+    class for creating table of role in hospital
+    """
+    role = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.role
 
 
 # custom user model
@@ -147,7 +149,18 @@ class Staff(models.Model):
     salary = models.IntegerField(default=0)
     is_approve = models.BooleanField(default=False)
     is_available = models.BooleanField(default=False)
-    speciality = models.ForeignKey('StaffSpeciality', on_delete=models.CASCADE)
+    speciality = models.ForeignKey('StaffSpeciality', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.staff.username
+
+
+class Patient(models.Model):
+    """
+    class for making patient table.
+    """
+    patient = models.ForeignKey(User, on_delete=models.CASCADE)
+    UUID = models.UUIDField(default=uuid.uuid4, editable=False)
+
+    def __str__(self):
+        return self.patient.username
