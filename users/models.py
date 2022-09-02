@@ -137,3 +137,17 @@ class StaffSpeciality(models.Model):
 
     def __str__(self):
         return self.speciality
+
+
+class Staff(models.Model):
+    """
+    class for creating staff table.
+    """
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
+    salary = models.IntegerField(default=0)
+    is_approve = models.BooleanField(default=False)
+    is_available = models.BooleanField(default=False)
+    speciality = models.ForeignKey('StaffSpeciality', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.staff.username

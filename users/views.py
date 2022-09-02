@@ -1,13 +1,15 @@
 from django.contrib.auth import authenticate
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 
+from users.models import User
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
-    AddStaffSpecialitySerializer
+    AddStaffSpecialitySerializer, UserUpdateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -132,3 +134,33 @@ class AddStaffSpecialityView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'msg': 'Speciality Added successfully'}, status=status.HTTP_200_OK)
+
+
+class UserUpdateView(APIView):
+    """
+    API for updating user information
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk, *args, **kwargs):
+        fetch_id = pk
+        fetch_user = get_object_or_404(User, pk=fetch_id)
+        serializer = UserUpdateSerializer(fetch_user, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'msg': 'User Updated successfully'}, status=status.HTTP_200_OK)
+
+
+class UserDeleteView(APIView):
+    """
+    API for deleting user information
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, *args, **kwargs):
+        fetch_id = pk
+        fetch_user = get_object_or_404(User, pk=fetch_id)
+        fetch_user.delete()
+        return Response({'msg': 'User Deleted successfully'})

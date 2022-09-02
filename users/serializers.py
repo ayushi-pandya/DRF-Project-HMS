@@ -169,3 +169,13 @@ class AddStaffSpecialitySerializer(serializers.ModelSerializer):
         if not user.is_admin:
             raise serializers.ValidationError('You are not Admin...You can not access this page')
         return attrs
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user update
+    """
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'phone', 'age', 'address', 'profile']
