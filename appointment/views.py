@@ -1,13 +1,12 @@
 from datetime import datetime
-
-from django.http import JsonResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from appointment.models import Appointments
-from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer
-from users.models import Staff
+from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer
+from users.renderers import UserRenderer
 
 
 class LoadTimeslots(APIView):
@@ -54,3 +53,17 @@ class AddAppointmentView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return Response({'msg': 'Appointment Added successfully'}, status=status.HTTP_200_OK)
+
+
+class ViewAppointment(generics.ListAPIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = ViewAppointmentSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_admin:
+            queryset = Appointments.objects.all()
+        else:
+            queryset = Appointments.objects.filter(user=self.request.user)
+        return queryset

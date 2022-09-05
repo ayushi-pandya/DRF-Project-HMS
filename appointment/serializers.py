@@ -49,3 +49,13 @@ class LoadTimeslotsSerializer(serializers.ModelSerializer):
         if not staff:
             raise serializers.ValidationError('This staff is not available')
         return attrs
+
+
+class ViewAppointmentSerializer(serializers.ModelSerializer):
+    """
+    serializer for appointment view
+    """
+
+    class Meta:
+        model = Appointments
+        fields = ['user', 'staff', 'date', 'timeslot', 'disease']
