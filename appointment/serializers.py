@@ -8,7 +8,7 @@ from users.models import Staff
 
 class AddAppointmentSerializer(serializers.ModelSerializer):
     """
-    Serializer for user update
+    Serializer for appointment
     """
 
     class Meta:
@@ -31,4 +31,21 @@ class AddAppointmentSerializer(serializers.ModelSerializer):
         user = Appointments.objects.filter(staff=fetch_staff.id).filter(date=date).filter(timeslot=timeslot)
         if user:
             raise serializers.ValidationError('This slot is already been booked..Please choose another slot')
+        return attrs
+
+
+class LoadTimeslotsSerializer(serializers.ModelSerializer):
+    """
+    serializer for loading timeslots
+    """
+
+    class Meta:
+        model = Appointments
+        fields = ['staff', 'date']
+
+    def validate(self, attrs):
+        fetch_staff = attrs.get('staff')
+        staff = Staff.objects.filter(id=fetch_staff.id).filter(is_approve=True).filter(is_available=True)
+        if not staff:
+            raise serializers.ValidationError('This staff is not available')
         return attrs

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from appointment.models import Appointments
-from appointment.serializers import AddAppointmentSerializer
+from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer
 from users.models import Staff
 
 
@@ -16,8 +16,10 @@ class LoadTimeslots(APIView):
     """
 
     def get(self, request):
-        fetch_staff = request.data.get('staff')
-        fetch_date = request.data.get('date')
+        serializer = LoadTimeslotsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        fetch_staff = serializer.data.get('staff')
+        fetch_date = serializer.data.get('date')
         fetch_time = Appointments.objects.filter(staff_id=fetch_staff).filter(date=fetch_date)
         user_data = []
         time_slot_choices = []
@@ -40,9 +42,8 @@ class LoadTimeslots(APIView):
                     time_slot_choices.append(f"{i}:00")
         time_list = sorted(time_list)
         time_slot_choices = sorted(time_slot_choices)
-        b = set(time_slot_choices).difference(time_list)
-        b = list(sorted(b))
-        return JsonResponse(b, safe=False)
+        available_time = set(time_slot_choices).difference(time_list)
+        return Response(list(sorted(available_time)), status=status.HTTP_200_OK)
 
 
 class AddAppointmentView(generics.CreateAPIView):
@@ -53,4 +54,3 @@ class AddAppointmentView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return Response({'msg': 'Appointment Added successfully'}, status=status.HTTP_200_OK)
-
