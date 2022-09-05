@@ -1,7 +1,7 @@
 from xml.dom import ValidationErr
 
 from rest_framework import serializers
-from users.models import User, UserRole, StaffSpeciality
+from users.models import User, UserRole, StaffSpeciality, Staff
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -150,8 +150,12 @@ class AddUserRoleSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user = self.context.get('user')
+        role = attrs.get('role')
+        fetch_role = UserRole.objects.filter(role=role)
         if not user.is_admin:
             raise serializers.ValidationError('You are not Admin...You can not access this page')
+        if fetch_role:
+            raise serializers.ValidationError('This role is already been added')
         return attrs
 
 
@@ -166,8 +170,12 @@ class AddStaffSpecialitySerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user = self.context.get('user')
+        speciality = attrs.get('speciality')
+        fetch_speciality = StaffSpeciality.objects.filter(speciality=speciality)
         if not user.is_admin:
             raise serializers.ValidationError('You are not Admin...You can not access this page')
+        if fetch_speciality:
+            raise serializers.ValidationError('This speciality is already been added')
         return attrs
 
 
@@ -179,3 +187,21 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'phone', 'age', 'address', 'profile']
+
+
+class StaffUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user update
+    """
+
+    class Meta:
+        model = Staff
+        fields = ['salary', 'is_approve', 'is_available', 'speciality']
+
+    def validate(self, attrs):
+        user = self.context.get('user')
+        fetch_user = User.objects.get(id=user.staff_id)
+        speciality = attrs.get('speciality')
+        if str(fetch_user.role) == 'Nurse' and str(speciality) != 'Nurse':
+            raise serializers.ValidationError('You are Nurse you can not choose another role')
+        return attrs

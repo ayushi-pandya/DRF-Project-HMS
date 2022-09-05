@@ -1,15 +1,16 @@
 from django.contrib.auth import authenticate
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.views import APIView
 
-from users.models import User
+from users.models import User, Staff
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
-    AddStaffSpecialitySerializer, UserUpdateSerializer
+    AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -146,7 +147,7 @@ class UserUpdateView(APIView):
     def patch(self, request, pk, *args, **kwargs):
         fetch_id = pk
         fetch_user = get_object_or_404(User, pk=fetch_id)
-        serializer = UserUpdateSerializer(fetch_user, data=request.data, partial=False)
+        serializer = UserUpdateSerializer(fetch_user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'msg': 'User Updated successfully'}, status=status.HTTP_200_OK)
@@ -164,3 +165,26 @@ class UserDeleteView(APIView):
         fetch_user = get_object_or_404(User, pk=fetch_id)
         fetch_user.delete()
         return Response({'msg': 'User Deleted successfully'})
+
+
+class StaffUpdateView(generics.UpdateAPIView):
+    """
+    API for updating staff information
+    """
+    renderer_classes = [UserRenderer]
+    queryset = Staff.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    serializer_class = StaffUpdateSerializer
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.is_admin:
+            fetch_user = get_object_or_404(Staff, id=instance.id)
+            serializer = StaffUpdateSerializer(instance, data=request.data, context={'user': fetch_user})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({'msg': 'Staff Updated successfully'}, status=status.HTTP_200_OK)
+        else:
+            raise ValidationError('You are not Admin...You can not access this page')
+
