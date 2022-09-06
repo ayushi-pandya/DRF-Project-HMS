@@ -1,5 +1,6 @@
 from datetime import datetime
 from rest_framework import generics, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -46,6 +47,9 @@ class LoadTimeslots(APIView):
 
 
 class AddAppointmentView(generics.CreateAPIView):
+    """
+    API for adding appointment
+    """
     serializer_class = AddAppointmentSerializer
 
     def create(self, request, *args, **kwargs):
@@ -56,6 +60,9 @@ class AddAppointmentView(generics.CreateAPIView):
 
 
 class ViewAppointment(generics.ListAPIView):
+    """
+    API for showing list of appointments
+    """
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
@@ -67,3 +74,17 @@ class ViewAppointment(generics.ListAPIView):
         else:
             queryset = Appointments.objects.filter(user=self.request.user)
         return queryset
+
+
+class DeleteAppointmentView(APIView):
+    """
+    API for deleting appointment
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, *args, **kwargs):
+        fetch_id = pk
+        fetch_user = get_object_or_404(Appointments, pk=fetch_id)
+        fetch_user.delete()
+        return Response({'msg': 'Appointment Deleted successfully'})
