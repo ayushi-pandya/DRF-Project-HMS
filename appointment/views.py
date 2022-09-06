@@ -92,6 +92,9 @@ class DeleteAppointmentView(APIView):
 
 
 class AddRoomView(generics.CreateAPIView):
+    """
+    API for adding rooms data
+    """
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated, IsAdminUser]
 
@@ -99,5 +102,30 @@ class AddRoomView(generics.CreateAPIView):
     serializer_class = AddRoomSerializer
 
     def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
+        super().create(request, *args, **kwargs)
         return Response({'msg': 'Room Created successfully'}, status=status.HTTP_201_CREATED)
+
+
+class SearchRoom(APIView):
+    """
+    class for give data to ajax call for search rooms
+    """
+
+    def get(self, request):
+        room = Room.objects.all().values_list('room_type', flat=True)
+        room_list = list(room)
+        return Response(room_list, status=status.HTTP_201_CREATED)
+
+
+class ViewRooms(generics.ListAPIView):
+    """
+    API for showing list of appointments
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = AddRoomSerializer
+
+    def get_queryset(self):
+        queryset = Room.objects.all()
+        return queryset
