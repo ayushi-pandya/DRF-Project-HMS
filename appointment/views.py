@@ -3,10 +3,11 @@ from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from appointment.models import Appointments
-from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer
+from appointment.models import Appointments, Room
+from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer, \
+    AddRoomSerializer
 from users.renderers import UserRenderer
 
 
@@ -88,3 +89,15 @@ class DeleteAppointmentView(APIView):
         fetch_user = get_object_or_404(Appointments, pk=fetch_id)
         fetch_user.delete()
         return Response({'msg': 'Appointment Deleted successfully'})
+
+
+class AddRoomView(generics.CreateAPIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    queryset = Room.objects.all()
+    serializer_class = AddRoomSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({'msg': 'Room Created successfully'}, status=status.HTTP_201_CREATED)

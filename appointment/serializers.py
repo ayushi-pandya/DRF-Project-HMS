@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from appointment.models import Appointments
+from appointment.models import Appointments, Room
 from users.models import Staff
 
 
@@ -59,3 +59,13 @@ class ViewAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointments
         fields = ['user', 'staff', 'date', 'timeslot', 'disease']
+
+
+class AddRoomSerializer(serializers.ModelSerializer):
+    """
+    serializer for adding rooms
+    """
+
+    class Meta:
+        model = Room
+        fields = ['charge', 'AC', 'is_ICU', 'room_type']

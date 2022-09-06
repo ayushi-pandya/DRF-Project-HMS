@@ -37,3 +37,21 @@ class Appointments(models.Model):
 
     def __str__(self):
         return f"Patient: {self.user} | Time: {self.timeslot}"
+
+
+class Room(models.Model):
+    """
+    class for creating table for rooms
+    """
+    ROOM_CHOICES = (
+        ('General', 'General'),
+        ('Private', 'Private'),
+        ('Semi-Private', 'Semi-Private')
+    )
+    charge = models.IntegerField()
+    AC = models.BooleanField(default=False)
+    is_ICU = models.BooleanField(default=False)
+    room_type = models.CharField(max_length=100, choices=ROOM_CHOICES)
+
+    def __str__(self):
+        return f"Room No:{self.id}"
