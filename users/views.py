@@ -10,7 +10,8 @@ from users.models import User, Staff
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
-    AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer
+    AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer, \
+    AddMedicineSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -232,3 +233,19 @@ class ViewStaff(generics.ListAPIView):
     def get_queryset(self):
         queryset = Staff.objects.all()
         return queryset
+
+
+class AddMedicineView(generics.CreateAPIView):
+    """
+    API for adding medicines
+    """
+    renderer_classes = [UserRenderer]
+    serializer_class = AddMedicineSerializer
+
+    def create(self, request, *args, **kwargs):
+        print(self.request.user.role)
+        if self.request.user.is_admin or str(self.request.user.role) == 'Doctor':
+            super().create(request, *args, **kwargs)
+            return Response({'msg': 'Medicine Added successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            raise ValidationError('You have no rights to access this page')

@@ -164,3 +164,11 @@ class Patient(models.Model):
 
     def __str__(self):
         return self.patient.username
+
+
+class Medicine(models.Model):
+    """
+    class for creating table for medicine
+    """
+    medicine_name = models.CharField(max_length=200)
+    charge = models.DecimalField(max_digits=10, decimal_places=2)

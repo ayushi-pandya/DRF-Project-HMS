@@ -5,6 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.exceptions import ValidationError
 
 from appointment.models import Appointments, Room, Admit, Notification
 from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer, \
@@ -201,12 +202,11 @@ class DischargeByDoctor(generics.CreateAPIView):
     serializer_class = DischargeByDoctorSerializer
 
     def create(self, request, *args, **kwargs):
-        if self.request.user.role == 'Doctor':
+        if str(self.request.user.role) == 'Doctor':
             super().create(request, *args, **kwargs)
             return Response({'msg': 'Patient Discharged by Doctor successfully'}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'errors': 'You are not doctor you can not access this page'},
-                            status=status.HTTP_404_NOT_FOUND)
+            raise ValidationError('You are not Doctor you can not access this page')
 
 
 class DischargeByAdminView(generics.UpdateAPIView):

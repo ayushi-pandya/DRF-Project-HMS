@@ -1,7 +1,7 @@
 from xml.dom import ValidationErr
 
 from rest_framework import serializers
-from users.models import User, UserRole, StaffSpeciality, Staff
+from users.models import User, UserRole, StaffSpeciality, Staff, Medicine
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -209,3 +209,24 @@ class ViewStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = ['staff', 'salary', 'is_approve', 'is_available', 'speciality']
+
+
+class AddMedicineSerializer(serializers.ModelSerializer):
+    """
+    Serializer for adding medicines
+    """
+
+    class Meta:
+        model = Medicine
+        fields = ['medicine_name', 'charge']
+
+    def validate(self, attrs):
+        medicine_name = attrs.get('medicine_name')
+        charge = attrs.get('charge')
+        charge = str(charge)
+        fetch_medicine = Medicine.objects.filter(medicine_name=medicine_name)
+        if len(fetch_medicine) != 0:
+            raise serializers.ValidationError('This medicine is already been added')
+        if int(charge.split('.')[0]) <= 1:
+            raise serializers.ValidationError('Medicine cost can not be zero')
+        return attrs
