@@ -205,3 +205,13 @@ class StaffUpdateSerializer(serializers.ModelSerializer):
         if str(fetch_user.role) == 'Nurse' and str(speciality) != 'Nurse':
             raise serializers.ValidationError('You are Nurse you can not choose another role')
         return attrs
+
+
+class ViewStaffSerializer(serializers.ModelSerializer):
+    """
+    Serializer for showing list of staff
+    """
+
+    class Meta:
+        model = Staff
+        fields = ['staff', 'salary', 'is_approve', 'is_available', 'speciality']

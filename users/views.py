@@ -10,7 +10,7 @@ from users.models import User, Staff
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
-    AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer
+    AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -184,3 +184,51 @@ class StaffUpdateView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'msg': 'Staff Updated successfully'}, status=status.HTTP_200_OK)
+
+
+class SearchUser(APIView):
+    """
+    API for give data to ajax call for search user
+    """
+
+    def get(self, request):
+        user = User.objects.all().values_list('username', flat=True)
+        return Response(list(user), status=status.HTTP_200_OK)
+
+
+class ViewUser(generics.ListAPIView):
+    """
+    API for showing list of user
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = UserProfileSerializer
+
+    def get_queryset(self):
+        queryset = User.objects.all()
+        return queryset
+
+
+class SearchStaff(APIView):
+    """
+    API for give data to ajax call for search user
+    """
+
+    def get(self, request):
+        user = Staff.objects.all().values_list('staff__username', flat=True)
+        return Response(list(user), status=status.HTTP_200_OK)
+
+
+class ViewStaff(generics.ListAPIView):
+    """
+    API for showing list of staff
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = ViewStaffSerializer
+
+    def get_queryset(self):
+        queryset = Staff.objects.all()
+        return queryset

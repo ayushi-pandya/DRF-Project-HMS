@@ -116,7 +116,7 @@ class SearchRoom(APIView):
     def get(self, request):
         room = Room.objects.all().values_list('room_type', flat=True)
         room_list = list(room)
-        return Response(room_list, status=status.HTTP_201_CREATED)
+        return Response(room_list, status=status.HTTP_200_OK)
 
 
 class ViewRooms(generics.ListAPIView):
