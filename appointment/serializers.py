@@ -104,3 +104,22 @@ class DischargeByDoctorSerializer(serializers.ModelSerializer):
         if already_discharged:
             raise serializers.ValidationError("This patient is already discharged")
         return attrs
+
+
+class DischargeByAdminSerializer(serializers.ModelSerializer):
+    """
+    serializer for discharge patient by admin
+    """
+
+    class Meta:
+        model = Admit
+        fields = ['charge']
+
+    def validate(self, attrs):
+        charge = attrs.get('charge')
+        if charge is not None:
+            if int(charge) < 1000:
+                raise serializers.ValidationError("Charge can not be less than 1000")
+            return attrs
+        else:
+            raise serializers.ValidationError('charge is required field')

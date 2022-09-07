@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from appointment.models import Appointments, Room, Admit, AdmitStaff, Notification
 from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer, \
-    AddRoomSerializer, AdmitPatientSerializer, DischargeByDoctorSerializer
+    AddRoomSerializer, AdmitPatientSerializer, DischargeByDoctorSerializer, DischargeByAdminSerializer
 from users.models import Staff, Patient
 from users.renderers import UserRenderer
 
@@ -203,3 +203,25 @@ class DischargeByDoctor(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         super().create(request, *args, **kwargs)
         return Response({'msg': 'Patient Discharged by Doctor successfully'}, status=status.HTTP_201_CREATED)
+
+
+class DischargeByAdminView(generics.UpdateAPIView):
+    """
+    API for updating staff information
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    queryset = Admit.objects.all()
+    lookup_field = 'id'
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        fetch_admit = get_object_or_404(Admit, id=instance.id)
+        serializer = DischargeByAdminSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        fetch_id = Notification.objects.filter(patient=fetch_admit.id).first()
+        fetch_id.discharge = True
+        serializer.save(out_date=datetime.now().date())
+        fetch_id.save()
+        return Response({'msg': 'Patient discharged successfully'}, status=status.HTTP_200_OK)
