@@ -114,10 +114,10 @@ class AddUserRoleView(APIView):
     API for adding user role
     """
     renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def post(self, request, *args, **kwargs):
-        serializer = AddUserRoleSerializer(data=request.data, context={'user': request.user})
+        serializer = AddUserRoleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'msg': 'Role Added successfully'}, status=status.HTTP_200_OK)
@@ -128,10 +128,10 @@ class AddStaffSpecialityView(APIView):
     API for adding staff speciality
     """
     renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def post(self, request, *args, **kwargs):
-        serializer = AddStaffSpecialitySerializer(data=request.data, context={'user': request.user})
+        serializer = AddStaffSpecialitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({'msg': 'Speciality Added successfully'}, status=status.HTTP_200_OK)

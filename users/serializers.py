@@ -149,11 +149,8 @@ class AddUserRoleSerializer(serializers.ModelSerializer):
         fields = ['role']
 
     def validate(self, attrs):
-        user = self.context.get('user')
         role = attrs.get('role')
         fetch_role = UserRole.objects.filter(role=role)
-        if not user.is_admin:
-            raise serializers.ValidationError('You are not Admin...You can not access this page')
         if fetch_role:
             raise serializers.ValidationError('This role is already been added')
         return attrs
@@ -169,11 +166,8 @@ class AddStaffSpecialitySerializer(serializers.ModelSerializer):
         fields = ['speciality']
 
     def validate(self, attrs):
-        user = self.context.get('user')
         speciality = attrs.get('speciality')
         fetch_speciality = StaffSpeciality.objects.filter(speciality=speciality)
-        if not user.is_admin:
-            raise serializers.ValidationError('You are not Admin...You can not access this page')
         if fetch_speciality:
             raise serializers.ValidationError('This speciality is already been added')
         return attrs

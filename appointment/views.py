@@ -53,6 +53,7 @@ class AddAppointmentView(generics.CreateAPIView):
     """
     API for adding appointment
     """
+    renderer_classes = [UserRenderer]
     serializer_class = AddAppointmentSerializer
 
     def create(self, request, *args, **kwargs):
@@ -194,14 +195,18 @@ class DischargeByDoctor(generics.CreateAPIView):
     saving discharge request in notification module
     """
     renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     queryset = Notification.objects.all()
     serializer_class = DischargeByDoctorSerializer
 
     def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
-        return Response({'msg': 'Patient Discharged by Doctor successfully'}, status=status.HTTP_201_CREATED)
+        if self.request.user.role == 'Doctor':
+            super().create(request, *args, **kwargs)
+            return Response({'msg': 'Patient Discharged by Doctor successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'errors': 'You are not doctor you can not access this page'},
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class DischargeByAdminView(generics.UpdateAPIView):
