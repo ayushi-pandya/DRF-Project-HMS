@@ -82,6 +82,16 @@ class AdmitPatientSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         room = attrs.get('room')
+        staff = self.context.get('staff')
+        if len(staff) > 1:
+            for i in range(len(staff)):
+                get_staff = Staff.objects.filter(id=staff[i]).filter(is_available=True).filter(is_approve=True)
+                if len(get_staff) == 0:
+                    raise serializers.ValidationError("This staff is not available")
+        else:
+            get_staff = Staff.objects.filter(id=staff).filter(is_available=True).filter(is_approve=True)
+            if len(get_staff) == 0:
+                raise serializers.ValidationError("This staff is not available")
         available_room = Admit.objects.filter(out_date__isnull=True).filter(room=room)
         if available_room:
             raise serializers.ValidationError("This room already have patient..please choose another")

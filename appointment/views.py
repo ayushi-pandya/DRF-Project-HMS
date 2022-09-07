@@ -141,12 +141,11 @@ class AdmitPatientView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def create(self, request, *args, **kwargs):
-
-        serializer = AdmitPatientSerializer(data=request.data)
+        fetch_staff = request.data.get('staff')
+        serializer = AdmitPatientSerializer(data=request.data, context={'staff': fetch_staff})
         if serializer.is_valid(raise_exception=ValueError):
             fetch_room = request.data.get('room')
             fetch_patient = request.data.get('patient')
-            fetch_staff = request.data.get('staff')
             fetch_disease = request.data.get('disease')
             fetch_in_date = request.data.get('in_date')
 
