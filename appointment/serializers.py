@@ -79,3 +79,10 @@ class AdmitPatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admit
         fields = ['room', 'patient', 'staff', 'disease', 'in_date']
+
+    def validate(self, attrs):
+        room = attrs.get('room')
+        available_room = Admit.objects.filter(out_date__isnull=True).filter(room=room)
+        if available_room:
+            raise serializers.ValidationError("This room already have patient..please choose another")
+        return attrs

@@ -15,7 +15,7 @@ from users.renderers import UserRenderer
 
 class LoadTimeslots(APIView):
     """
-    class for give data to ajax call for loading available  timeslots  from database
+    API for give data to ajax call for loading available  timeslots  from database
     """
 
     def get(self, request):
@@ -110,7 +110,7 @@ class AddRoomView(generics.CreateAPIView):
 
 class SearchRoom(APIView):
     """
-    class for give data to ajax call for search rooms
+    API for give data to ajax call for search rooms
     """
 
     def get(self, request):
@@ -178,3 +178,14 @@ class ViewAdmitPatient(generics.ListAPIView):
     def get_queryset(self):
         queryset = Admit.objects.filter(out_date__isnull=True)
         return queryset
+
+
+class SearchAdmitPatient(APIView):
+    """
+    API for give data to ajax call for search admit user
+    """
+
+    def get(self, request):
+        patient = Admit.objects.all().values_list('patient__patient__username', flat=True)
+        return Response(list(patient), status=status.HTTP_200_OK)
+
