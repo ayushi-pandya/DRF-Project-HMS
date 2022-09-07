@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from appointment.models import Appointments, Room, Admit, AdmitStaff, Notification
+from appointment.models import Appointments, Room, Admit, Notification
 from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer, \
     AddRoomSerializer, AdmitPatientSerializer, DischargeByDoctorSerializer, DischargeByAdminSerializer
 from users.models import Staff, Patient

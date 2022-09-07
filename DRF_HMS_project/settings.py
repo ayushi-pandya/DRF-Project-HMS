@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'phonenumber_field',
     'appointment.apps.AppointmentConfig',
+    'nurse.apps.NurseConfig'
 
 ]
 
