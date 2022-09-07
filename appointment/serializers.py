@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from appointment.models import Appointments, Room
+from appointment.models import Appointments, Room, Admit
 from users.models import Staff
 
 
@@ -69,3 +69,13 @@ class AddRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['charge', 'AC', 'is_ICU', 'room_type']
+
+
+class AdmitPatientSerializer(serializers.ModelSerializer):
+    """
+    serializer for adding rooms
+    """
+
+    class Meta:
+        model = Admit
+        fields = ['room', 'patient', 'staff', 'disease', 'in_date']

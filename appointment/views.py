@@ -1,13 +1,15 @@
 from datetime import datetime
+
 from rest_framework import generics, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from appointment.models import Appointments, Room
+from appointment.models import Appointments, Room, Admit, AdmitStaff
 from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer, \
-    AddRoomSerializer
+    AddRoomSerializer, AdmitPatientSerializer
+from users.models import Staff, Patient
 from users.renderers import UserRenderer
 
 
@@ -129,3 +131,36 @@ class ViewRooms(generics.ListAPIView):
     def get_queryset(self):
         queryset = Room.objects.all()
         return queryset
+
+
+class AdmitPatientView(generics.CreateAPIView):
+    """
+    API for adding rooms data
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = AdmitPatientSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=ValueError):
+            fetch_room = request.data.get('room')
+            fetch_patient = request.data.get('patient')
+            fetch_staff = request.data.get('staff')
+            fetch_disease = request.data.get('disease')
+            fetch_in_date = request.data.get('in_date')
+
+            get_room = Room.objects.get(id=fetch_room)
+            get_patient = Patient.objects.get(id=fetch_patient)
+            admit_patient = Admit.objects.create(room=get_room, patient=get_patient, disease=fetch_disease,
+                                                 in_date=fetch_in_date)
+
+            if len(fetch_staff) > 1:
+                for i in range(len(fetch_staff)):
+                    get_staff = Staff.objects.filter(id=fetch_staff[i]).first()
+                    admit_patient.staff.add(get_staff)
+            else:
+                get_staff = Staff.objects.filter(id=fetch_staff)
+                admit_patient.staff.add(get_staff)
+
+            return Response({'msg': 'Patient Admitted successfully'}, status=status.HTTP_201_CREATED)
