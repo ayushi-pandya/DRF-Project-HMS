@@ -164,3 +164,17 @@ class AdmitPatientView(generics.CreateAPIView):
                 admit_patient.staff.add(get_staff)
 
             return Response({'msg': 'Patient Admitted successfully'}, status=status.HTTP_201_CREATED)
+
+
+class ViewAdmitPatient(generics.ListAPIView):
+    """
+    API for showing list of admitted patient
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = AdmitPatientSerializer
+
+    def get_queryset(self):
+        queryset = Admit.objects.filter(out_date__isnull=True)
+        return queryset
