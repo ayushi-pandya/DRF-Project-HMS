@@ -83,3 +83,11 @@ class AdmitStaff(models.Model):
 
     def __str__(self):
         return f"Staff:{self.staff}"
+
+
+class Notification(models.Model):
+    """
+    class for creating notification module
+    """
+    patient = models.ForeignKey(Admit, on_delete=models.CASCADE)
+    discharge = models.BooleanField(default=False)

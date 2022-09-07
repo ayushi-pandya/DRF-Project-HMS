@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from appointment.models import Appointments, Room, Admit, AdmitStaff
+from appointment.models import Appointments, Room, Admit, AdmitStaff, Notification
 from appointment.serializers import AddAppointmentSerializer, LoadTimeslotsSerializer, ViewAppointmentSerializer, \
-    AddRoomSerializer, AdmitPatientSerializer
+    AddRoomSerializer, AdmitPatientSerializer, DischargeByDoctorSerializer
 from users.models import Staff, Patient
 from users.renderers import UserRenderer
 
@@ -189,3 +189,17 @@ class SearchAdmitPatient(APIView):
         patient = Admit.objects.all().values_list('patient__patient__username', flat=True)
         return Response(list(patient), status=status.HTTP_200_OK)
 
+
+class DischargeByDoctor(generics.CreateAPIView):
+    """
+    saving discharge request in notification module
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    queryset = Notification.objects.all()
+    serializer_class = DischargeByDoctorSerializer
+
+    def create(self, request, *args, **kwargs):
+        super().create(request, *args, **kwargs)
+        return Response({'msg': 'Patient Discharged by Doctor successfully'}, status=status.HTTP_201_CREATED)

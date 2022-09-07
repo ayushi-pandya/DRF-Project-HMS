@@ -2,8 +2,8 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from appointment.models import Appointments, Room, Admit
-from users.models import Staff
+from appointment.models import Appointments, Room, Admit, Notification
+from users.models import Staff, Patient
 
 
 class AddAppointmentSerializer(serializers.ModelSerializer):
@@ -73,7 +73,7 @@ class AddRoomSerializer(serializers.ModelSerializer):
 
 class AdmitPatientSerializer(serializers.ModelSerializer):
     """
-    serializer for adding rooms
+    serializer for adding admitted patient
     """
 
     class Meta:
@@ -85,4 +85,22 @@ class AdmitPatientSerializer(serializers.ModelSerializer):
         available_room = Admit.objects.filter(out_date__isnull=True).filter(room=room)
         if available_room:
             raise serializers.ValidationError("This room already have patient..please choose another")
+        return attrs
+
+
+class DischargeByDoctorSerializer(serializers.ModelSerializer):
+    """
+    serializer for discharge patient by doctor
+    """
+
+    class Meta:
+        model = Notification
+        fields = ['patient']
+
+    def validate(self, attrs):
+        patient = attrs.get('patient')
+        get_patient = Patient.objects.get(id=patient.patient_id)
+        already_discharged = Admit.objects.filter(patient=get_patient).filter(out_date__isnull=False)
+        if already_discharged:
+            raise serializers.ValidationError("This patient is already discharged")
         return attrs

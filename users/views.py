@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.views import APIView
@@ -173,18 +173,14 @@ class StaffUpdateView(generics.UpdateAPIView):
     """
     renderer_classes = [UserRenderer]
     queryset = Staff.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
     lookup_field = 'id'
     serializer_class = StaffUpdateSerializer
 
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.is_admin:
-            fetch_user = get_object_or_404(Staff, id=instance.id)
-            serializer = StaffUpdateSerializer(instance, data=request.data, context={'user': fetch_user})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response({'msg': 'Staff Updated successfully'}, status=status.HTTP_200_OK)
-        else:
-            raise ValidationError('You are not Admin...You can not access this page')
-
+        fetch_user = get_object_or_404(Staff, id=instance.id)
+        serializer = StaffUpdateSerializer(instance, data=request.data, context={'user': fetch_user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'msg': 'Staff Updated successfully'}, status=status.HTTP_200_OK)
