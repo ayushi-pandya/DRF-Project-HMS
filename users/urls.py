@@ -4,7 +4,7 @@ from users.views import UserRegistrationView, UserLoginView, UserProfileView, Us
     SendPasswordResetEmailView, UserPasswordResetView, AddUserRoleView, AddStaffSpecialityView, UserDeleteView, \
     UserUpdateView, StaffUpdateView, SearchUser, ViewUser, SearchStaff, ViewStaff, AddMedicineView, PrescriptionView, \
     EmergencyCaseView, SearchEmergency, ViewEmergency, MedicineUpdateView, SearchMedicine, ViewMedicine, \
-    ViewTodayAppointment
+    ViewTodayAppointment, ViewPrescription
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
@@ -23,6 +23,8 @@ urlpatterns = [
     path('search_staff/', SearchStaff.as_view(), name='search_staff'),
     path('view_staff/', ViewStaff.as_view(), name='view_staff'),
     path('prescription/', PrescriptionView.as_view(), name='prescription'),
+    path('view_prescription/', ViewPrescription.as_view(), name='view_prescription'),
+
     path('emergency_case/', EmergencyCaseView.as_view(), name='emergency_case'),
     path('view_emergency/', ViewEmergency.as_view(), name='view_emergency'),
     path('search_emergency/', SearchEmergency.as_view(), name='search_emergency'),

@@ -9,13 +9,13 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 
 from appointment.models import Appointments
-from users.models import User, Staff, Patient, Medicine, Prescription, Emergency
+from users.models import User, Staff, Patient, Medicine, Prescription, Emergency, PrescribeMedicine
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
     AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer, \
     AddMedicineSerializer, PrescriptionSerializer, EmergencyCaseSerializer, ViewEmergencyCaseSerializer, \
-    ViewMedicineSerializer, ViewTodayAppointmentSerializer
+    ViewMedicineSerializer, ViewTodayAppointmentSerializer, ViewPrescriptionSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -263,63 +263,117 @@ class PrescriptionView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PrescriptionSerializer
 
-    def create(self, request, *args, **kwargs):
-        # print(request.data)
-        # print(1)
-        # print(self.request.user.role)
-        # print(2)
-        # if str(self.request.user.role) == 'Doctor':
-        #     print(3)
-        #     serializer = PrescriptionSerializer(data=request.data)
-        #     if serializer.is_valid(raise_exception=ValueError):
-        #         fetch_patient = request.data.get('patient')
-        #         print('fetch_patient:', fetch_patient)
-        #
-        #         fetch_staff = request.data.get('staff')
-        #         print('fetch_staff:', fetch_staff)
-        #
-        #         fetch_medicine = request.data.get('medicine')
-        #         print('fetch_medicine:', fetch_medicine)
-        #
-        #         fetch_count = request.data.get('count')
-        #         print('fetch_count:', fetch_count)
-        #
-        #         get_patient = Patient.objects.get(id=fetch_patient)
-        #         print('get_patient:', get_patient)
-        #
-        #         get_staff = Staff.objects.get(id=fetch_staff)
-        #         print('get_staff:', get_staff)
-        #
-        #         prescribe_patient = Prescription.objects.create(patient=get_patient, staff=get_staff)
-        #
-        #         if len(fetch_medicine) > 1 and len(fetch_count) > 1:
-        #             for i in range(len(fetch_medicine)):
-        #                 print(4)
-        #                 get_medicine = Medicine.objects.filter(id=fetch_medicine[i]).first()
-        #                 print('get_medicine:', get_medicine)
-        #                 print(5)
-        #                 get_count = fetch_count[i]
-        #                 print('get_count:', get_count)
-        #                 print(6)
-        #                 prescribe_patient.medicine.add(get_medicine)
-        #                 print(7)
-        #                 prescribe_patient.count.add(get_count)
-        #                 print(8)
-        #
-        #         else:
-        #             print(9)
-        #             get_medicine = Medicine.objects.filter(id=fetch_medicine).first()
-        #             print('get_medicine:', get_medicine)
-        #             print(10)
-        #             prescribe_patient.medicine.add(get_medicine)
-        #             print(11)
-        #             prescribe_patient.count.add(fetch_count)
-        #             print(12)
-        if str(request.user.role) == 'Doctor':
-            super().create(request, *args, **kwargs)
-            return Response({'msg': ' Prescription added successfully'}, status=status.HTTP_201_CREATED)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data, context={"requested_data": request.data['medicine']})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'data': serializer.data, 'msg': 'LEAVE_CREATED'}, status=status.HTTP_201_CREATED)
+
+    # def create(self, request, *args, **kwargs):
+    #     print(request.data)
+    #     print(1)
+    #     print(self.request.user.role)
+    #     print(2)
+    #     if str(self.request.user.role) == 'Doctor':
+    #         print(3)
+    #         serializer = PrescriptionSerializer(data=request.data)
+    #         if serializer.is_valid(raise_exception=ValueError):
+    #             fetch_patient = request.data.get('patient')
+    #             print('fetch_patient:', fetch_patient)
+    #
+    #             fetch_staff = request.data.get('staff')
+    #             print('fetch_staff:', fetch_staff)
+    #
+    #             fetch_medicine = request.data.get('mediciness')
+    #             print('fetch_medicine:', fetch_medicine)
+    #
+    #             get_patient = Patient.objects.get(id=fetch_patient)
+    #             print('get_patient:', get_patient)
+    #
+    #             get_staff = Staff.objects.get(id=fetch_staff)
+    #             print('get_staff:', get_staff)
+    #
+    #             prescribe_patient = Prescription.objects.create(patient=get_patient, staff=get_staff)
+    #             print('prescribe_patient:', prescribe_patient)
+    #
+    #             for i in fetch_medicine:
+    #                 print(i['medicine'])
+    #                 print(i['count'])
+    #
+    #                 get_medicine = Medicine.objects.filter(id=i['medicine']).first()
+    #                 print('get_medicine:', get_medicine)
+    #
+    #                 get_count = i['count']
+    #
+    #                 though_table_data = PrescribeMedicine.objects.create(prescription=prescribe_patient,
+    #                                                                      medicine=get_medicine, count=get_count)
+    #                 print(though_table_data)
+    #             return Response({'msg': ' Prescription added successfully'}, status=status.HTTP_201_CREATED)
+    #
+    #             # fetch_count = request.data.get('count')
+    #             # print('fetch_count:', fetch_count)
+    #
+    #
+    #
+    #             # if len(fetch_medicine) > 1 and len(fetch_count) > 1:
+    #             #     for i in range(len(fetch_medicine)):
+    #             #         print(4)
+    #             #         get_medicine = Medicine.objects.filter(id=fetch_medicine[i]).first()
+    #             #         print('get_medicine:', get_medicine)
+    #             #         print(5)
+    #             #         get_count = fetch_count[i]
+    #             #         print('get_count:', get_count)
+    #             #         print(6)
+    #             #         though_table_data = PrescribeMedicine.objects.create(prescription=prescribe_patient,
+    #             #                                                              medicine=get_medicine, count=get_count)
+    #             #         print(though_table_data)
+    #             #         # prescribe_patient.medicine.add(get_medicine)
+    #             #         print(7)
+    #             #         # prescribe_patient.count.add(get_count)
+    #             #         # print(8)
+    #             #         return Response({'msg': ' Prescription added successfully'}, status=status.HTTP_201_CREATED)
+    #             #
+    #             #
+    #             # else:
+    #             #     print(9)
+    #             #     get_medicine = Medicine.objects.filter(id=fetch_medicine).first()
+    #             #     print('get_medicine:', get_medicine)
+    #             #     print(10)
+    #             #     though_table_data = PrescribeMedicine.objects.create(prescription=prescribe_patient,
+    #             #                                                          medicine=get_medicine, count=fetch_count)
+    #             #     print(though_table_data)
+    #             #     # prescribe_patient.medicine.add(get_medicine)
+    #             #     # print(11)
+    #             #     # prescribe_patient.count.add(fetch_count)
+    #             #     print(12)
+    #             #     return Response({'msg': ' Prescription added successfully'}, status=status.HTTP_201_CREATED)
+    #
+    #     # if str(request.user.role) == 'Doctor':
+    #     #     super().create(request, *args, **kwargs)
+    #     #     return Response({'msg': ' Prescription added successfully'}, status=status.HTTP_201_CREATED)
+    #     # else:
+    #     #     print(5)
+    #     #     raise ValidationError('You have no rights to access this page')
+
+
+class ViewPrescription(generics.ListAPIView):
+    """
+    API for showing list of prescription
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = ViewPrescriptionSerializer
+
+    def get_queryset(self):
+        print(self.request.user.id)
+        if str(self.request.user.role) == 'Doctor':
+            queryset = Prescription.objects.filter(staff=self.request.user.id)
+            return queryset
+        elif self.request.user.is_admin:
+            queryset = Prescription.objects.all()
+            return queryset
         else:
-            print(5)
             raise ValidationError('You have no rights to access this page')
 
 
@@ -414,16 +468,15 @@ class ViewTodayAppointment(generics.ListAPIView):
 
     def get_queryset(self):
         if str(self.request.user.role) == 'Doctor' or str(self.request.user.role) == 'Nurse':
-            get_staff = Staff.objects.filter(staff_id=self.request.user.id).filter(is_available=True).filter(is_approve=True)
+            get_staff = Staff.objects.filter(staff_id=self.request.user.id).filter(is_available=True).filter(
+                is_approve=True)
             print(get_staff)
             if len(get_staff) == 0:
                 raise ValidationError("You are not approved yet")
             else:
                 date = datetime.now().date()
-                queryset = Appointments.objects.filter(staff__staff__username=self.request.user).filter(date=date).order_by('id')
+                queryset = Appointments.objects.filter(staff__staff__username=self.request.user).filter(
+                    date=date).order_by('id')
                 return queryset
         else:
             raise ValidationError('You have no rights to access this page')
-
-
-

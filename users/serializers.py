@@ -245,14 +245,23 @@ class PrescriptionSerializer(serializers.ModelSerializer):
     """
     Serializer for patient prescription
     """
-    medicines = MedicineCountSerializer(source='medicine', many=True, write_only=True)
+
+    # medicines = MedicineCountSerializer(source='medicine', many=True, write_only=True)
 
     # count = serializers.IntegerField(source='medicine.count')
+    # medicine = serializers.JSONField()
 
     class Meta:
         model = Prescription
-        fields = ['patient', 'staff', 'medicines']
+        fields = ['patient', 'staff', 'medicine']
 
+    def create(self, validated_data):
+        request_to = self.context['requested_data']
+        prescription = Prescription.objects.create(**validated_data)
+        for user in request_to:
+            PrescribeMedicine.objects.create(prescription=prescription, medicine_id=user['medicine'],
+                                             count=user['count'])
+        return prescription
     # def create(self, validated_data):
     # line_items = validated_data.pop('medicine')
     # print(line_items)
@@ -270,9 +279,10 @@ class PrescriptionSerializer(serializers.ModelSerializer):
     # m = validated_data.get('medicine')
     # dish_item = validated_data["medicine"]
     # print(dish_item)
-    # item_obj = models.PrescribeMedicine.objects.create(**dish_item)
+    # for dish in dish_item:
+    #     item_obj = models.PrescribeMedicine.objects.create(**dish)
     #
-    # validated_data["medicines"] = item_obj
+    # validated_data["medicines"].aapenditem_obj
     # return super().create(validated_data)
 
 
@@ -325,3 +335,13 @@ class ViewTodayAppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointments
         fields = ['user', 'staff', 'date', 'timeslot', 'disease']
+
+
+class ViewPrescriptionSerializer(serializers.ModelSerializer):
+    """
+    serializer for viewing prescription data
+    """
+
+    class Meta:
+        model = Prescription
+        fields = ['patient', 'staff', 'medicine']
