@@ -6,12 +6,13 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.views import APIView
 
-from users.models import User, Staff
+from users.models import User, Staff, Patient, Medicine, Prescription, Emergency
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
     AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer, \
-    AddMedicineSerializer
+    AddMedicineSerializer, PrescriptionSerializer, EmergencyCaseSerializer, ViewEmergencyCaseSerializer, \
+    ViewMedicineSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -249,3 +250,151 @@ class AddMedicineView(generics.CreateAPIView):
             return Response({'msg': 'Medicine Added successfully'}, status=status.HTTP_201_CREATED)
         else:
             raise ValidationError('You have no rights to access this page')
+
+
+class PrescriptionView(generics.CreateAPIView):
+    """
+    API for prescription of patient
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrescriptionSerializer
+
+    def create(self, request, *args, **kwargs):
+        # print(request.data)
+        # print(1)
+        # print(self.request.user.role)
+        # print(2)
+        # if str(self.request.user.role) == 'Doctor':
+        #     print(3)
+        #     serializer = PrescriptionSerializer(data=request.data)
+        #     if serializer.is_valid(raise_exception=ValueError):
+        #         fetch_patient = request.data.get('patient')
+        #         print('fetch_patient:', fetch_patient)
+        #
+        #         fetch_staff = request.data.get('staff')
+        #         print('fetch_staff:', fetch_staff)
+        #
+        #         fetch_medicine = request.data.get('medicine')
+        #         print('fetch_medicine:', fetch_medicine)
+        #
+        #         fetch_count = request.data.get('count')
+        #         print('fetch_count:', fetch_count)
+        #
+        #         get_patient = Patient.objects.get(id=fetch_patient)
+        #         print('get_patient:', get_patient)
+        #
+        #         get_staff = Staff.objects.get(id=fetch_staff)
+        #         print('get_staff:', get_staff)
+        #
+        #         prescribe_patient = Prescription.objects.create(patient=get_patient, staff=get_staff)
+        #
+        #         if len(fetch_medicine) > 1 and len(fetch_count) > 1:
+        #             for i in range(len(fetch_medicine)):
+        #                 print(4)
+        #                 get_medicine = Medicine.objects.filter(id=fetch_medicine[i]).first()
+        #                 print('get_medicine:', get_medicine)
+        #                 print(5)
+        #                 get_count = fetch_count[i]
+        #                 print('get_count:', get_count)
+        #                 print(6)
+        #                 prescribe_patient.medicine.add(get_medicine)
+        #                 print(7)
+        #                 prescribe_patient.count.add(get_count)
+        #                 print(8)
+        #
+        #         else:
+        #             print(9)
+        #             get_medicine = Medicine.objects.filter(id=fetch_medicine).first()
+        #             print('get_medicine:', get_medicine)
+        #             print(10)
+        #             prescribe_patient.medicine.add(get_medicine)
+        #             print(11)
+        #             prescribe_patient.count.add(fetch_count)
+        #             print(12)
+        if str(request.user.role) == 'Doctor':
+            super().create(request, *args, **kwargs)
+            return Response({'msg': ' Prescription added successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            print(5)
+            raise ValidationError('You have no rights to access this page')
+
+
+class EmergencyCaseView(generics.CreateAPIView):
+    """
+    API for emergency cases
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = EmergencyCaseSerializer
+
+    def create(self, request, *args, **kwargs):
+        super().create(request, *args, **kwargs)
+        return Response({'msg': 'Emergency Case Added successfully'}, status=status.HTTP_201_CREATED)
+
+
+class SearchEmergency(APIView):
+    """
+    class for give data to ajax call for search user
+    """
+
+    def get(self, request):
+        user = Emergency.objects.all().values_list('patient__patient__username', flat=True)
+        return Response(list(user), status=status.HTTP_200_OK)
+
+
+class ViewEmergency(generics.ListAPIView):
+    """
+    API for showing list of emergency cases
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = ViewEmergencyCaseSerializer
+
+    def get_queryset(self):
+        queryset = Emergency.objects.all()
+        return queryset
+
+
+class MedicineUpdateView(generics.UpdateAPIView):
+    """
+    API for updating medicine information
+    """
+    renderer_classes = [UserRenderer]
+    queryset = Medicine.objects.all()
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    lookup_field = 'id'
+    serializer_class = AddMedicineSerializer
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = AddMedicineSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'msg': 'Medicine Updated successfully'}, status=status.HTTP_200_OK)
+
+
+class SearchMedicine(APIView):
+    """
+    class for give data to ajax call for search medicine
+    """
+
+    def get(self, request):
+        medicine = Medicine.objects.all().values_list('medicine_name', flat=True)
+        return Response(list(medicine), status=status.HTTP_200_OK)
+
+
+class ViewMedicine(generics.ListAPIView):
+    """
+    API for showing list of medicines
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = ViewMedicineSerializer
+
+    def get_queryset(self):
+        queryset = Medicine.objects.all()
+        return queryset

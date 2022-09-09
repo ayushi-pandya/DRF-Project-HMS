@@ -2,7 +2,8 @@ from django.urls import path
 
 from users.views import UserRegistrationView, UserLoginView, UserProfileView, UserChangePasswordView, \
     SendPasswordResetEmailView, UserPasswordResetView, AddUserRoleView, AddStaffSpecialityView, UserDeleteView, \
-    UserUpdateView, StaffUpdateView, SearchUser, ViewUser, SearchStaff, ViewStaff, AddMedicineView
+    UserUpdateView, StaffUpdateView, SearchUser, ViewUser, SearchStaff, ViewStaff, AddMedicineView, PrescriptionView, \
+    EmergencyCaseView, SearchEmergency, ViewEmergency, MedicineUpdateView, SearchMedicine, ViewMedicine
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
@@ -20,6 +21,14 @@ urlpatterns = [
     path('view_user/', ViewUser.as_view(), name='view_user'),
     path('search_staff/', SearchStaff.as_view(), name='search_staff'),
     path('view_staff/', ViewStaff.as_view(), name='view_staff'),
+    path('prescription/', PrescriptionView.as_view(), name='prescription'),
+    path('emergency_case/', EmergencyCaseView.as_view(), name='emergency_case'),
+    path('view_emergency/', ViewEmergency.as_view(), name='view_emergency'),
+    path('search_emergency/', SearchEmergency.as_view(), name='search_emergency'),
     path('add_medicine/', AddMedicineView.as_view(), name='add_medicine'),
+    path('update_medicine/<int:id>/', MedicineUpdateView.as_view(), name='update_medicine'),
+    path('search_medicine/', SearchMedicine.as_view(), name='search_medicine'),
+    path('view_medicine/', ViewMedicine.as_view(), name='view_medicine'),
 
 ]
+

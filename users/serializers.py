@@ -1,7 +1,9 @@
 from xml.dom import ValidationErr
 
 from rest_framework import serializers
-from users.models import User, UserRole, StaffSpeciality, Staff, Medicine
+
+from users import models
+from users.models import User, UserRole, StaffSpeciality, Staff, Medicine, Prescription, PrescribeMedicine, Emergency
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -230,3 +232,85 @@ class AddMedicineSerializer(serializers.ModelSerializer):
         if int(charge.split('.')[0]) <= 1:
             raise serializers.ValidationError('Medicine cost can not be zero')
         return attrs
+
+
+class MedicineCountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrescribeMedicine
+        fields = ['medicine', 'count']
+
+
+class PrescriptionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for patient prescription
+    """
+    medicines = MedicineCountSerializer(source='medicine', many=True, write_only=True)
+
+    # count = serializers.IntegerField(source='medicine.count')
+
+    class Meta:
+        model = Prescription
+        fields = ['patient', 'staff', 'medicines']
+
+    # def create(self, validated_data):
+    # line_items = validated_data.pop('medicine')
+    # print(line_items)
+    # instance = super(PrescriptionSerializer, self).create(validated_data)
+    # print(instance)
+    # for item in line_items:
+    #     print(1)
+    #     instance.count.add(item['count'])
+    #
+    #     # m = instance.medicine.add(item['medicine'])
+    #     print(2)
+    #     print(m,'///')
+    # instance.save()
+    # return instance
+    # m = validated_data.get('medicine')
+    # dish_item = validated_data["medicine"]
+    # print(dish_item)
+    # item_obj = models.PrescribeMedicine.objects.create(**dish_item)
+    #
+    # validated_data["medicines"] = item_obj
+    # return super().create(validated_data)
+
+
+class EmergencyCaseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for emergency case
+    """
+
+    class Meta:
+        model = Emergency
+        fields = ['patient', 'staff', 'disease', 'charge']
+
+    def validate(self, attrs):
+        staff = attrs.get('staff')
+        charge = attrs.get('charge')
+        charge = str(charge)
+        get_staff = Staff.objects.filter(id=staff.id).filter(is_available=True).filter(is_approve=True)
+        if len(get_staff) == 0:
+            raise serializers.ValidationError("This staff is not available")
+        if int(charge.split('.')[0]) <= 1:
+            raise serializers.ValidationError('Charge can not be zero')
+        return attrs
+
+
+class ViewEmergencyCaseSerializer(serializers.ModelSerializer):
+    """
+    Serializer for emergency case
+    """
+
+    class Meta:
+        model = Emergency
+        fields = ['patient', 'staff', 'datetime', 'disease', 'charge']
+
+
+class ViewMedicineSerializer(serializers.ModelSerializer):
+    """
+    Serializer for view medicines
+    """
+
+    class Meta:
+        model = Medicine
+        fields = ['medicine_name', 'charge']

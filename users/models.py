@@ -1,6 +1,7 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from rest_framework.exceptions import ValidationError
 import uuid
@@ -172,3 +173,33 @@ class Medicine(models.Model):
     """
     medicine_name = models.CharField(max_length=200)
     charge = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class Prescription(models.Model):
+    """
+    class for creating table of patient's prescription
+    """
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    medicine = models.ManyToManyField(Medicine, through='PrescribeMedicine')
+
+
+class PrescribeMedicine(models.Model):
+    """
+    class for creating through table for prescription
+    """
+    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
+    medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
+    count = models.IntegerField()
+
+
+class Emergency(models.Model):
+    """
+    class for creating emergency table
+    """
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    datetime = models.DateTimeField(default=timezone.now)
+    disease = models.CharField(max_length=500)
+    charge = models.DecimalField(max_digits=10, decimal_places=2)
+    is_bill_generated = models.BooleanField(default=False)
