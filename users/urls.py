@@ -3,7 +3,8 @@ from django.urls import path
 from users.views import UserRegistrationView, UserLoginView, UserProfileView, UserChangePasswordView, \
     SendPasswordResetEmailView, UserPasswordResetView, AddUserRoleView, AddStaffSpecialityView, UserDeleteView, \
     UserUpdateView, StaffUpdateView, SearchUser, ViewUser, SearchStaff, ViewStaff, AddMedicineView, PrescriptionView, \
-    EmergencyCaseView, SearchEmergency, ViewEmergency, MedicineUpdateView, SearchMedicine, ViewMedicine
+    EmergencyCaseView, SearchEmergency, ViewEmergency, MedicineUpdateView, SearchMedicine, ViewMedicine, \
+    ViewTodayAppointment
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
@@ -29,6 +30,6 @@ urlpatterns = [
     path('update_medicine/<int:id>/', MedicineUpdateView.as_view(), name='update_medicine'),
     path('search_medicine/', SearchMedicine.as_view(), name='search_medicine'),
     path('view_medicine/', ViewMedicine.as_view(), name='view_medicine'),
-
+    path('view_todays_appointment/', ViewTodayAppointment.as_view(), name='view_todays_appointment'),
 ]
 

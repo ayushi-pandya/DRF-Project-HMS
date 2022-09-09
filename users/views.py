@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
@@ -6,13 +8,14 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.views import APIView
 
+from appointment.models import Appointments
 from users.models import User, Staff, Patient, Medicine, Prescription, Emergency
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
     AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer, \
     AddMedicineSerializer, PrescriptionSerializer, EmergencyCaseSerializer, ViewEmergencyCaseSerializer, \
-    ViewMedicineSerializer
+    ViewMedicineSerializer, ViewTodayAppointmentSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -398,3 +401,29 @@ class ViewMedicine(generics.ListAPIView):
     def get_queryset(self):
         queryset = Medicine.objects.all()
         return queryset
+
+
+class ViewTodayAppointment(generics.ListAPIView):
+    """
+    API for showing list today's appointment of a particular staff
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = ViewTodayAppointmentSerializer
+
+    def get_queryset(self):
+        if str(self.request.user.role) == 'Doctor' or str(self.request.user.role) == 'Nurse':
+            get_staff = Staff.objects.filter(staff_id=self.request.user.id).filter(is_available=True).filter(is_approve=True)
+            print(get_staff)
+            if len(get_staff) == 0:
+                raise ValidationError("You are not approved yet")
+            else:
+                date = datetime.now().date()
+                queryset = Appointments.objects.filter(staff__staff__username=self.request.user).filter(date=date).order_by('id')
+                return queryset
+        else:
+            raise ValidationError('You have no rights to access this page')
+
+
+

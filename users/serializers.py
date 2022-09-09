@@ -2,6 +2,7 @@ from xml.dom import ValidationErr
 
 from rest_framework import serializers
 
+from appointment.models import Appointments
 from users import models
 from users.models import User, UserRole, StaffSpeciality, Staff, Medicine, Prescription, PrescribeMedicine, Emergency
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
@@ -314,3 +315,13 @@ class ViewMedicineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
         fields = ['medicine_name', 'charge']
+
+
+class ViewTodayAppointmentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for viewing today's appointment
+    """
+
+    class Meta:
+        model = Appointments
+        fields = ['user', 'staff', 'date', 'timeslot', 'disease']
