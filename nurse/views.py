@@ -21,8 +21,10 @@ class AssignDuty(generics.CreateAPIView):
     serializer_class = AssignDutySerializer
 
     def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
-        return Response({'msg': 'Duty Assigned successfully'}, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'data': serializer.data, 'msg': 'Duty Assigned successfully'}, status=status.HTTP_201_CREATED)
 
 
 class SearchDuty(APIView):
