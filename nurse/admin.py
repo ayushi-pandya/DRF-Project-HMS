@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from nurse.models import NurseDuty
+
+admin.site.register(NurseDuty)

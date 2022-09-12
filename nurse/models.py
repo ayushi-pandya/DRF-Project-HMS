@@ -10,3 +10,6 @@ class NurseDuty(models.Model):
     """
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     patient = models.ManyToManyField(Admit)
+
+    def __str__(self):
+        return f"Staff:{self.staff.staff.username}| Patient:{self.patient}"

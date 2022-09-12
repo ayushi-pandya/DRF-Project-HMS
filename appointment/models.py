@@ -36,7 +36,7 @@ class Appointments(models.Model):
     is_bill_generated = models.BooleanField(null=True, default=False)
 
     def __str__(self):
-        return f"Patient: {self.user} | Time: {self.timeslot}"
+        return f"Patient: {self.user.username} | Time: {self.timeslot}"
 
 
 class Room(models.Model):
@@ -71,7 +71,7 @@ class Admit(models.Model):
     is_bill_generated = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.patient.patient.username
+        return f"Patient:{self.patient.patient.username}"
 
 
 class AdmitStaff(models.Model):
@@ -82,7 +82,7 @@ class AdmitStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Staff:{self.staff}"
+        return f"Staff:{self.staff.staff.username}"
 
 
 class Notification(models.Model):
@@ -91,3 +91,6 @@ class Notification(models.Model):
     """
     patient = models.ForeignKey(Admit, on_delete=models.CASCADE)
     discharge = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Patient:{self.patient.patient.patient.username}"

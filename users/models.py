@@ -113,7 +113,7 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['email', 'phone', 'age', 'address', 'gender', 'role']
 
     def __str__(self):
-        return self.username
+        return f"User:{self.username}"
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -139,7 +139,7 @@ class StaffSpeciality(models.Model):
     speciality = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.speciality
+        return f"Staff Speciality:{self.speciality}"
 
 
 class Staff(models.Model):
@@ -153,7 +153,7 @@ class Staff(models.Model):
     speciality = models.ForeignKey('StaffSpeciality', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.staff.username
+        return f"Staff Name:{self.staff.username}"
 
 
 class Patient(models.Model):
@@ -164,7 +164,7 @@ class Patient(models.Model):
     UUID = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __str__(self):
-        return self.patient.username
+        return f"Patient:{self.patient.username}"
 
 
 class Medicine(models.Model):
@@ -173,6 +173,9 @@ class Medicine(models.Model):
     """
     medicine_name = models.CharField(max_length=200)
     charge = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Medicine Name:{self.medicine_name}"
 
 
 class Prescription(models.Model):
@@ -184,7 +187,7 @@ class Prescription(models.Model):
     medicine = models.ManyToManyField(Medicine, through='PrescribeMedicine')
 
     def __str__(self):
-        return f"patient:{self.patient}"
+        return f"patient:{self.patient.patient.username}"
 
 
 class PrescribeMedicine(models.Model):
@@ -209,3 +212,6 @@ class Emergency(models.Model):
     disease = models.CharField(max_length=500)
     charge = models.DecimalField(max_digits=10, decimal_places=2)
     is_bill_generated = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Patient:{self.patient.patient.username}"
