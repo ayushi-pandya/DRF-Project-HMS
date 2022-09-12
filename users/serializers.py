@@ -390,6 +390,7 @@ class EnterFeedbackSerializer(serializers.ModelSerializer):
     """
     Serializer for adding feedback
     """
+
     class Meta:
         model = Feedback
         fields = ['content']
@@ -402,3 +403,12 @@ class EnterFeedbackSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Minimum 10 letters are required for content')
         return attrs
 
+
+class ViewFeedbackSerializer(serializers.ModelSerializer):
+    """
+    Serializer for viewing list feedback
+    """
+
+    class Meta:
+        model = Feedback
+        fields = ['user', 'content']

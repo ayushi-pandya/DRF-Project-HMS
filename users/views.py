@@ -9,13 +9,14 @@ from rest_framework import status, generics
 from rest_framework.views import APIView
 
 from appointment.models import Appointments
-from users.models import User, Staff, Patient, Medicine, Prescription, Emergency, PrescribeMedicine
+from users.models import User, Staff, Patient, Medicine, Prescription, Emergency, PrescribeMedicine, Feedback
 from users.renderers import UserRenderer
 from users.serializers import UserLoginSerializer, UserRegistrationSerializer, UserProfileSerializer, \
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
     AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer, \
     AddMedicineSerializer, PrescriptionSerializer, EmergencyCaseSerializer, ViewEmergencyCaseSerializer, \
-    ViewMedicineSerializer, ViewTodayAppointmentSerializer, ViewPrescriptionSerializer, EnterFeedbackSerializer
+    ViewMedicineSerializer, ViewTodayAppointmentSerializer, ViewPrescriptionSerializer, EnterFeedbackSerializer, \
+    ViewFeedbackSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -506,3 +507,18 @@ class EnterFeedback(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return Response({'data': serializer.data, 'msg': 'Feedback Added Successfully'}, status=status.HTTP_201_CREATED)
+
+
+class ViewFeedback(generics.ListAPIView):
+    """
+    API for view list of feedback
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = ViewFeedbackSerializer
+
+    def get(self, request, *args, **kwargs):
+        queryset = Feedback.objects.all()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
