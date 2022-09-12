@@ -125,7 +125,7 @@ class AddUserRoleView(APIView):
         serializer = AddUserRoleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'msg': 'Role Added successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'Role Added successfully'}, status=status.HTTP_200_OK)
 
 
 class AddStaffSpecialityView(APIView):
@@ -139,7 +139,7 @@ class AddStaffSpecialityView(APIView):
         serializer = AddStaffSpecialitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'msg': 'Speciality Added successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'Speciality Added successfully'}, status=status.HTTP_200_OK)
 
 
 class UserUpdateView(APIView):
@@ -155,7 +155,7 @@ class UserUpdateView(APIView):
         serializer = UserUpdateSerializer(fetch_user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'msg': 'User Updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'User Updated successfully'}, status=status.HTTP_200_OK)
 
 
 class UserDeleteView(APIView):
@@ -188,7 +188,7 @@ class StaffUpdateView(generics.UpdateAPIView):
         serializer = StaffUpdateSerializer(instance, data=request.data, context={'user': fetch_user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'msg': 'Staff Updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'Staff Updated successfully'}, status=status.HTTP_200_OK)
 
 
 class SearchUser(APIView):
@@ -249,8 +249,10 @@ class AddMedicineView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         print(self.request.user.role)
         if self.request.user.is_admin or str(self.request.user.role) == 'Doctor':
-            super().create(request, *args, **kwargs)
-            return Response({'msg': 'Medicine Added successfully'}, status=status.HTTP_201_CREATED)
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({'data': serializer.data, 'msg': 'Medicine Added successfully'}, status=status.HTTP_201_CREATED)
         else:
             raise ValidationError('You have no rights to access this page')
 
@@ -267,7 +269,7 @@ class PrescriptionView(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={"requested_data": request.data['medicine']})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'data': serializer.data, 'msg': 'LEAVE_CREATED'}, status=status.HTTP_201_CREATED)
+        return Response({'data': serializer.data, 'msg': 'Prescription added successfully'}, status=status.HTTP_201_CREATED)
 
     # def create(self, request, *args, **kwargs):
     #     print(request.data)

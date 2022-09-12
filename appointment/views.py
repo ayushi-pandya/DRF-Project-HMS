@@ -61,7 +61,7 @@ class AddAppointmentView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
-        return Response({'msg': 'Appointment Added successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'Appointment Added successfully'}, status=status.HTTP_200_OK)
 
 
 class ViewAppointment(generics.ListAPIView):
@@ -106,8 +106,10 @@ class AddRoomView(generics.CreateAPIView):
     serializer_class = AddRoomSerializer
 
     def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
-        return Response({'msg': 'Room Created successfully'}, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'data': serializer.data, 'msg': 'Room Created successfully'}, status=status.HTTP_201_CREATED)
 
 
 class SearchRoom(APIView):
@@ -203,8 +205,11 @@ class DischargeByDoctor(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         if str(self.request.user.role) == 'Doctor':
-            super().create(request, *args, **kwargs)
-            return Response({'msg': 'Patient Discharged by Doctor successfully'}, status=status.HTTP_201_CREATED)
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({'data': serializer.data, 'msg': 'Patient Discharged by Doctor successfully'},
+                            status=status.HTTP_201_CREATED)
         else:
             raise ValidationError('You are not Doctor you can not access this page')
 
@@ -228,4 +233,4 @@ class DischargeByAdminView(generics.UpdateAPIView):
         fetch_id.discharge = True
         serializer.save(out_date=datetime.now().date())
         fetch_id.save()
-        return Response({'msg': 'Patient discharged successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'Patient discharged successfully'}, status=status.HTTP_200_OK)
