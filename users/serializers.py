@@ -1,6 +1,7 @@
 from xml.dom import ValidationErr
 
 from rest_framework import serializers
+from rest_framework.fields import ReadOnlyField
 
 from appointment.models import Appointments
 from users import models
@@ -235,12 +236,6 @@ class AddMedicineSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class MedicineCountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PrescribeMedicine
-        fields = ['medicine', 'count']
-
-
 class PrescriptionSerializer(serializers.ModelSerializer):
     """
     Serializer for patient prescription
@@ -257,6 +252,10 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request_to = self.context['requested_data']
+        staff = self.validated_data['staff']
+        get_staff = Staff.objects.filter(id=staff.id).filter(is_available=True).filter(is_approve=True)
+        if len(get_staff) == 0:
+            raise serializers.ValidationError("This staff is not available")
         prescription = Prescription.objects.create(**validated_data)
         for user in request_to:
             PrescribeMedicine.objects.create(prescription=prescription, medicine_id=user['medicine'],
@@ -337,11 +336,44 @@ class ViewTodayAppointmentSerializer(serializers.ModelSerializer):
         fields = ['user', 'staff', 'date', 'timeslot', 'disease']
 
 
+# class MedicineCountSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = PrescribeMedicine
+#         fields = '__all__'
+#
+#
+# class ViewPrescriptionSerializer(serializers.ModelSerializer):
+#     """
+#     serializer for viewing prescription data
+#     """
+#     # medicines = MedicineCountSerializer(source='medicine', many=True, read_only=True)
+#     # count = serializers.ReadOnlyField(source="user.username")
+#     # medicine = serializers.SlugRelatedField(
+#     #     many=True,
+#     #     read_only=True,
+#     #     slug_field='medicine_name'
+#     # )
+#     # count = MedicineCountSerializer(many=True, read_only=True)
+#     medicines = MedicineCountSerializer(source='medicine.count', read_only=True)
+#
+#     class Meta:
+#         model = Prescription
+#         fields = ['patient', 'staff', 'medicines']
+
+
+class MedicineCountSerializer(serializers.ModelSerializer):
+    patient = ReadOnlyField(source='medicine.patient')
+    staff = ReadOnlyField(source='medicine.staff')
+    medicine = ReadOnlyField(source='medicine.medicine')
+
+    class Meta:
+        model = PrescribeMedicine
+        fields = ['patient', 'staff', 'count', 'medicine']
+
+
 class ViewPrescriptionSerializer(serializers.ModelSerializer):
-    """
-    serializer for viewing prescription data
-    """
+    medicines = MedicineCountSerializer(source='prescribemedicine_set', many=True)
 
     class Meta:
         model = Prescription
-        fields = ['patient', 'staff', 'medicine']
+        fields = ['id', 'patient', 'staff', 'medicine', 'medicines']

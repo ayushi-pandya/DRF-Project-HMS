@@ -183,6 +183,9 @@ class Prescription(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     medicine = models.ManyToManyField(Medicine, through='PrescribeMedicine')
 
+    def __str__(self):
+        return f"patient:{self.patient}"
+
 
 class PrescribeMedicine(models.Model):
     """
@@ -191,6 +194,9 @@ class PrescribeMedicine(models.Model):
     prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     count = models.IntegerField()
+
+    def __str__(self):
+        return f"count:{self.count}"
 
 
 class Emergency(models.Model):

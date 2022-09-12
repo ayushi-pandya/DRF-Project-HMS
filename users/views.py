@@ -247,12 +247,12 @@ class AddMedicineView(generics.CreateAPIView):
     serializer_class = AddMedicineSerializer
 
     def create(self, request, *args, **kwargs):
-        print(self.request.user.role)
         if self.request.user.is_admin or str(self.request.user.role) == 'Doctor':
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({'data': serializer.data, 'msg': 'Medicine Added successfully'}, status=status.HTTP_201_CREATED)
+            return Response({'data': serializer.data, 'msg': 'Medicine Added successfully'},
+                            status=status.HTTP_201_CREATED)
         else:
             raise ValidationError('You have no rights to access this page')
 
@@ -269,7 +269,8 @@ class PrescriptionView(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={"requested_data": request.data['medicine']})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'data': serializer.data, 'msg': 'Prescription added successfully'}, status=status.HTTP_201_CREATED)
+        return Response({'data': serializer.data, 'msg': 'Prescription added successfully'},
+                        status=status.HTTP_201_CREATED)
 
     # def create(self, request, *args, **kwargs):
     #     print(request.data)
@@ -367,14 +368,25 @@ class ViewPrescription(generics.ListAPIView):
 
     serializer_class = ViewPrescriptionSerializer
 
-    def get_queryset(self):
-        print(self.request.user.id)
-        if str(self.request.user.role) == 'Doctor':
-            queryset = Prescription.objects.filter(staff=self.request.user.id)
-            return queryset
+    def get(self, request, *args, **kwargs):
+        if str(self.request.user.role) == 'Doctor' or str(self.request.user.role) == 'Nurse':
+            print(1111)
+            queryset = Prescription.objects.filter(staff__staff=self.request.user.id)
+            print(queryset)
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
         elif self.request.user.is_admin:
+            print(2)
             queryset = Prescription.objects.all()
-            return queryset
+            print(3)
+            print(queryset)
+            serializer = self.get_serializer(queryset, many=True)
+            print(4)
+            print(serializer)
+            print(5)
+            print(serializer.data)
+            print(6)
+            return Response(serializer.data)
         else:
             raise ValidationError('You have no rights to access this page')
 
@@ -389,8 +401,10 @@ class EmergencyCaseView(generics.CreateAPIView):
     serializer_class = EmergencyCaseSerializer
 
     def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
-        return Response({'msg': 'Emergency Case Added successfully'}, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=request.data, context={"requested_data": request.data['medicine']})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'data': serializer.data, 'msg': 'Emergency Case Added successfully'}, status=status.HTTP_201_CREATED)
 
 
 class SearchEmergency(APIView):
@@ -432,7 +446,7 @@ class MedicineUpdateView(generics.UpdateAPIView):
         serializer = AddMedicineSerializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'msg': 'Medicine Updated successfully'}, status=status.HTTP_200_OK)
+        return Response({'data': serializer.data, 'msg': 'Medicine Updated successfully'}, status=status.HTTP_200_OK)
 
 
 class SearchMedicine(APIView):
@@ -472,7 +486,6 @@ class ViewTodayAppointment(generics.ListAPIView):
         if str(self.request.user.role) == 'Doctor' or str(self.request.user.role) == 'Nurse':
             get_staff = Staff.objects.filter(staff_id=self.request.user.id).filter(is_available=True).filter(
                 is_approve=True)
-            print(get_staff)
             if len(get_staff) == 0:
                 raise ValidationError("You are not approved yet")
             else:
