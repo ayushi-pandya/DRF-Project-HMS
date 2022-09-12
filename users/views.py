@@ -15,7 +15,7 @@ from users.serializers import UserLoginSerializer, UserRegistrationSerializer, U
     UserChangePasswordSerializer, SendPasswordResetEmailSerializer, UserPasswordResetSerializer, AddUserRoleSerializer, \
     AddStaffSpecialitySerializer, UserUpdateSerializer, StaffUpdateSerializer, ViewStaffSerializer, \
     AddMedicineSerializer, PrescriptionSerializer, EmergencyCaseSerializer, ViewEmergencyCaseSerializer, \
-    ViewMedicineSerializer, ViewTodayAppointmentSerializer, ViewPrescriptionSerializer
+    ViewMedicineSerializer, ViewTodayAppointmentSerializer, ViewPrescriptionSerializer, EnterFeedbackSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -210,9 +210,10 @@ class ViewUser(generics.ListAPIView):
 
     serializer_class = UserProfileSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         queryset = User.objects.all()
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class SearchStaff(APIView):
@@ -234,9 +235,10 @@ class ViewStaff(generics.ListAPIView):
 
     serializer_class = ViewStaffSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         queryset = Staff.objects.all()
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class AddMedicineView(generics.CreateAPIView):
@@ -370,22 +372,12 @@ class ViewPrescription(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         if str(self.request.user.role) == 'Doctor' or str(self.request.user.role) == 'Nurse':
-            print(1111)
             queryset = Prescription.objects.filter(staff__staff=self.request.user.id)
-            print(queryset)
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
         elif self.request.user.is_admin:
-            print(2)
             queryset = Prescription.objects.all()
-            print(3)
-            print(queryset)
             serializer = self.get_serializer(queryset, many=True)
-            print(4)
-            print(serializer)
-            print(5)
-            print(serializer.data)
-            print(6)
             return Response(serializer.data)
         else:
             raise ValidationError('You have no rights to access this page')
@@ -404,7 +396,8 @@ class EmergencyCaseView(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={"requested_data": request.data['medicine']})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'data': serializer.data, 'msg': 'Emergency Case Added successfully'}, status=status.HTTP_201_CREATED)
+        return Response({'data': serializer.data, 'msg': 'Emergency Case Added successfully'},
+                        status=status.HTTP_201_CREATED)
 
 
 class SearchEmergency(APIView):
@@ -426,9 +419,10 @@ class ViewEmergency(generics.ListAPIView):
 
     serializer_class = ViewEmergencyCaseSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         queryset = Emergency.objects.all()
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class MedicineUpdateView(generics.UpdateAPIView):
@@ -468,9 +462,10 @@ class ViewMedicine(generics.ListAPIView):
 
     serializer_class = ViewMedicineSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         queryset = Medicine.objects.all()
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ViewTodayAppointment(generics.ListAPIView):
@@ -482,7 +477,7 @@ class ViewTodayAppointment(generics.ListAPIView):
 
     serializer_class = ViewTodayAppointmentSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         if str(self.request.user.role) == 'Doctor' or str(self.request.user.role) == 'Nurse':
             get_staff = Staff.objects.filter(staff_id=self.request.user.id).filter(is_available=True).filter(
                 is_approve=True)
@@ -492,6 +487,22 @@ class ViewTodayAppointment(generics.ListAPIView):
                 date = datetime.now().date()
                 queryset = Appointments.objects.filter(staff__staff__username=self.request.user).filter(
                     date=date).order_by('id')
-                return queryset
+                serializer = self.get_serializer(queryset, many=True)
+                return Response(serializer.data)
         else:
             raise ValidationError('You have no rights to access this page')
+
+
+class EnterFeedback(generics.CreateAPIView):
+    """
+    API for adding user feedback
+    """
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    serializer_class = EnterFeedbackSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user)
+        return Response({'data': serializer.data, 'msg': 'Feedback Added Successfully'}, status=status.HTTP_201_CREATED)

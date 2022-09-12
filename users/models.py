@@ -215,3 +215,14 @@ class Emergency(models.Model):
 
     def __str__(self):
         return f"Patient:{self.patient.patient.username}"
+
+
+class Feedback(models.Model):
+    """
+    class for user feedback.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.CharField(max_length=500)
+
+    def __str__(self):
+        return f"User:{self.user}"

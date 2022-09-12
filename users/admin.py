@@ -1,6 +1,6 @@
 from django.contrib import admin
 from users.models import User, UserRole, StaffSpeciality, Staff, Patient, Medicine, Prescription, PrescribeMedicine, \
-    Emergency
+    Emergency, Feedback
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 
@@ -39,4 +39,5 @@ admin.site.register(Medicine)
 admin.site.register(Prescription)
 admin.site.register(PrescribeMedicine)
 admin.site.register(Emergency)
+admin.site.register(Feedback)
 

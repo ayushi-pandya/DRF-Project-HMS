@@ -47,10 +47,12 @@ class ViewDuty(generics.ListAPIView):
 
     serializer_class = AssignDutySerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         if self.request.user.is_admin:
             queryset = NurseDuty.objects.all()
         else:
             staff = get_object_or_404(Staff, staff=self.request.user.id)
             queryset = NurseDuty.objects.filter(staff=staff)
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+

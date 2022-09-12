@@ -73,12 +73,13 @@ class ViewAppointment(generics.ListAPIView):
 
     serializer_class = ViewAppointmentSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         if self.request.user.is_admin:
             queryset = Appointments.objects.all()
         else:
             queryset = Appointments.objects.filter(user=self.request.user)
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class DeleteAppointmentView(APIView):
@@ -132,9 +133,10 @@ class ViewRooms(generics.ListAPIView):
 
     serializer_class = AddRoomSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         queryset = Room.objects.all()
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class AdmitPatientView(generics.CreateAPIView):
@@ -178,9 +180,10 @@ class ViewAdmitPatient(generics.ListAPIView):
 
     serializer_class = AdmitPatientSerializer
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         queryset = Admit.objects.filter(out_date__isnull=True)
-        return queryset
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class SearchAdmitPatient(APIView):

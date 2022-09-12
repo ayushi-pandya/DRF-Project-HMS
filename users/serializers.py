@@ -5,7 +5,8 @@ from rest_framework.fields import ReadOnlyField
 
 from appointment.models import Appointments
 from users import models
-from users.models import User, UserRole, StaffSpeciality, Staff, Medicine, Prescription, PrescribeMedicine, Emergency
+from users.models import User, UserRole, StaffSpeciality, Staff, Medicine, Prescription, PrescribeMedicine, Emergency, \
+    Feedback
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -362,6 +363,9 @@ class ViewTodayAppointmentSerializer(serializers.ModelSerializer):
 
 
 class MedicineCountSerializer(serializers.ModelSerializer):
+    """
+    Serializer for access though table
+    """
     patient = ReadOnlyField(source='medicine.patient')
     staff = ReadOnlyField(source='medicine.staff')
     medicine = ReadOnlyField(source='medicine.medicine')
@@ -372,8 +376,29 @@ class MedicineCountSerializer(serializers.ModelSerializer):
 
 
 class ViewPrescriptionSerializer(serializers.ModelSerializer):
+    """
+    Nested Serializer for viewing list of prescription
+    """
     medicines = MedicineCountSerializer(source='prescribemedicine_set', many=True)
 
     class Meta:
         model = Prescription
         fields = ['id', 'patient', 'staff', 'medicine', 'medicines']
+
+
+class EnterFeedbackSerializer(serializers.ModelSerializer):
+    """
+    Serializer for adding feedback
+    """
+    class Meta:
+        model = Feedback
+        fields = ['content']
+
+    def validate(self, attrs):
+        content = attrs.get('content')
+        print(content)
+        if len(content) <= 10:
+            print(1)
+            raise serializers.ValidationError('Minimum 10 letters are required for content')
+        return attrs
+

@@ -4,7 +4,7 @@ from users.views import UserRegistrationView, UserLoginView, UserProfileView, Us
     SendPasswordResetEmailView, UserPasswordResetView, AddUserRoleView, AddStaffSpecialityView, UserDeleteView, \
     UserUpdateView, StaffUpdateView, SearchUser, ViewUser, SearchStaff, ViewStaff, AddMedicineView, PrescriptionView, \
     EmergencyCaseView, SearchEmergency, ViewEmergency, MedicineUpdateView, SearchMedicine, ViewMedicine, \
-    ViewTodayAppointment, ViewPrescription
+    ViewTodayAppointment, ViewPrescription, EnterFeedback
 
 urlpatterns = [
     path('register/', UserRegistrationView.as_view(), name='register'),
@@ -24,7 +24,6 @@ urlpatterns = [
     path('view_staff/', ViewStaff.as_view(), name='view_staff'),
     path('prescription/', PrescriptionView.as_view(), name='prescription'),
     path('view_prescription/', ViewPrescription.as_view(), name='view_prescription'),
-
     path('emergency_case/', EmergencyCaseView.as_view(), name='emergency_case'),
     path('view_emergency/', ViewEmergency.as_view(), name='view_emergency'),
     path('search_emergency/', SearchEmergency.as_view(), name='search_emergency'),
@@ -33,5 +32,5 @@ urlpatterns = [
     path('search_medicine/', SearchMedicine.as_view(), name='search_medicine'),
     path('view_medicine/', ViewMedicine.as_view(), name='view_medicine'),
     path('view_todays_appointment/', ViewTodayAppointment.as_view(), name='view_todays_appointment'),
+    path('feedback/', EnterFeedback.as_view(), name='feedback'),
 ]
-
